@@ -1,8 +1,9 @@
 # gcaptcha
 
-A behavior-captcha server library in Go, compatible with the tianai-captcha protocol used by the XDMP frontend.
+A behavior-captcha server library in Go: challenge generation, track
+verification and one-time tokens.
 
-> Status: **experimental scaffold** (v0.0.0-dev). This is a **clean-room** implementation: no third-party source code is copied.
+> Status: **experimental scaffold** (v0.0.0-dev).
 
 ## Planned features
 
