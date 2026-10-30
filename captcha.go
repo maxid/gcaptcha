@@ -12,7 +12,7 @@ import (
 // TypeSlider is the only challenge type implemented so far.
 const TypeSlider = "SLIDER"
 
-// Tolerant is the allowed percentage deviation (Java DEFAULT_TOLERANT).
+// Tolerant is the allowed percentage deviation (default 0.02).
 const Tolerant = 0.02
 
 // Point is one sample of the drag track.
@@ -23,7 +23,7 @@ type Point struct {
 	Type string  `json:"type,omitempty"`
 }
 
-// Track is the client-side drag data (Java ImageCaptchaTrack).
+// Track is the client-side drag data.
 type Track struct {
 	BgImageWidth        int     `json:"bgImageWidth"`
 	BgImageHeight       int     `json:"bgImageHeight"`
@@ -36,7 +36,7 @@ type Track struct {
 	TrackList           []Point `json:"trackList"`
 }
 
-// Challenge is the generation response (Java ImageCaptchaVO field names).
+// Challenge is the generation response field set.
 type Challenge struct {
 	ID                    string `json:"id"`
 	Type                  string `json:"type"`
@@ -79,7 +79,7 @@ type Service struct {
 // Option configures a Service.
 type Option func(*Service)
 
-// WithTTL sets the challenge lifetime (default 20s, matching the Java default).
+// WithTTL sets the challenge lifetime (default 20s).
 func WithTTL(ttl time.Duration) Option {
 	return func(s *Service) {
 		if ttl > 0 {
