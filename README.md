@@ -28,6 +28,19 @@ ok, err := svc.Validate(ctx, challenge.ID, track) // single use
 `track` mirrors the frontend payload (`bgImageWidth`, `trackList[].x/...`);
 the percentage is `(last.x - first.x) / bgImageWidth`.
 
+## Behaviour checks (opt-in)
+
+The recorded contract is **position only**: the Java validator compares the drop
+percentage with a 0.02 tolerance and ignores the track. Rejecting tracks by default
+would therefore be stricter than production, so the behavioural checks are opt-in:
+
+```go
+svc := gcaptcha.New(store,
+    gcaptcha.WithTrackPolicy(gcaptcha.DefaultTrackPolicy()), // ≥3 points, ≥50ms, bounded jitter
+    gcaptcha.WithSecondaryVerification(true),                // 120s TTL, `secondary:` key
+)
+```
+
 ## Install
 
 ```bash

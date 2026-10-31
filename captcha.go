@@ -74,6 +74,11 @@ type Service struct {
 
 	mu  sync.Mutex
 	rng *rand.Rand
+
+	// trackPolicy and secondary are opt-in; the defaults reproduce the recorded
+	// contract (position-only validation, 20s lifetime).
+	trackPolicy *TrackPolicy
+	secondary   bool
 }
 
 // Option configures a Service.
@@ -144,10 +149,16 @@ func (s *Service) Generate(ctx context.Context) (Challenge, error) {
 	if err != nil {
 		return Challenge{}, err
 	}
-	if err := s.store.Save(ctx, id, ValidData{
+	ttl := s.ttl
+	storeID := id
+	if s.secondary {
+		ttl = secondaryTTL
+		storeID = "secondary:" + id
+	}
+	if err := s.store.Save(ctx, storeID, ValidData{
 		Percentage: float64(x) / float64(s.width),
 		Type:       TypeSlider,
-	}, s.ttl); err != nil {
+	}, ttl); err != nil {
 		return Challenge{}, err
 	}
 	return Challenge{
@@ -168,11 +179,18 @@ func (s *Service) Validate(ctx context.Context, id string, track Track) (bool, e
 	if id == "" {
 		return false, nil
 	}
-	data, ok, err := s.store.Take(ctx, id)
+	storeID := id
+	if s.secondary {
+		storeID = "secondary:" + id
+	}
+	data, ok, err := s.store.Take(ctx, storeID)
 	if err != nil {
 		return false, err
 	}
 	if !ok {
+		return false, nil
+	}
+	if !checkBehaviour(s.trackPolicy, track) {
 		return false, nil
 	}
 	return checkTrack(track, data.Percentage), nil

@@ -18,7 +18,20 @@ func TestRedisStoreOneTime(t *testing.T) {
 	if err := store.Save(ctx, "id1", data, 20*time.Second); err != nil {
 		t.Fatal(err)
 	}
-	if ttl := mr.TTL("captcha:id1"); ttl <= 0 || ttl > 20*time.Second {
+	// The key layout is Java's `...::captcha::<id>`: this store only appends the
+	// id, so the caller passes the platform part plus DefaultRedisPrefix.
+	storeWithPlatform := NewRedisStore(mr.Addr(), "", 0, "xdmp_platform"+DefaultRedisPrefix)
+	defer storeWithPlatform.Close()
+	if err := storeWithPlatform.Save(ctx, "id2", data, 20*time.Second); err != nil {
+		t.Fatal(err)
+	}
+	if key := "xdmp_platform" + DefaultRedisPrefix + "id2"; !mr.Exists(key) {
+		t.Fatalf("key %q missing; keys: %v", key, mr.Keys())
+	}
+	if !mr.Exists(DefaultRedisPrefix + "id1") {
+		t.Fatalf("default prefix not applied: %v", mr.Keys())
+	}
+	if ttl := mr.TTL(DefaultRedisPrefix + "id1"); ttl <= 0 || ttl > 20*time.Second {
 		t.Fatalf("ttl = %v", ttl)
 	}
 
