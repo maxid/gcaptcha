@@ -1,3 +1,5 @@
+English | [简体中文](README.zh-CN.md)
+
 # gcaptcha
 
 A behavior-captcha server library in Go: slider challenge generation,
